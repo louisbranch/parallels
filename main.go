@@ -1,8 +1,7 @@
 package main
 
 import (
-	"log"
-
+	"github.com/luizbranco/parallels/input"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -10,9 +9,14 @@ const FPS = 60
 
 var window *sdl.Window
 var renderer *sdl.Renderer
-var keystates []uint8
+var mode Mode
 
-var running = true
+type Mode int
+
+const (
+	MenuMode Mode = iota
+	GameMode
+)
 
 func main() {
 	// Initialize Video, Keyboard and Mouse Subsystems
@@ -31,7 +35,7 @@ func main() {
 
 	// If a window can't be created, we crash
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	// Create a renderer for the window. -1 is set to give us the first video
@@ -40,24 +44,31 @@ func main() {
 
 	// If a rendered can't be created, we crash
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
+	mode = MenuMode
+
+	// delay between loop interactions
 	delay := uint32(1000 / FPS)
 
-LOOP:
 	for {
 		start := sdl.GetTicks()
 
-		sdl.PumpEvents()
+		input.Process()
 
-		keystates = sdl.GetKeyboardState()
-
-		if sdl.HasEvent(sdl.QUIT) || keystates[sdl.SCANCODE_ESCAPE] == 1 {
-			break LOOP
+		if input.QuitKey == input.KeyPressed {
+			break
 		}
 
-		draw()
+		switch mode {
+		case MenuMode:
+			drawMenu()
+		case GameMode:
+			drawGame()
+		}
+
+		input.Update()
 
 		last := sdl.GetTicks() - start
 
@@ -69,11 +80,34 @@ LOOP:
 	// Destroy global renderer
 	renderer.Destroy()
 
-	// Close global window
+	// Destroy global window
 	window.Destroy()
 
-	// Close subsystems
+	// Close subsystems and exit
 	sdl.Quit()
+}
+
+func drawMenu() {
+	if input.NextTurnKey == input.KeyPressed {
+		mode = GameMode
+	}
+
+	draw()
+}
+
+func drawGame() {
+	if input.NextTurnKey == input.KeyPressed {
+		mode = MenuMode
+	}
+
+	// Set renderer to white color (RGBA)
+	renderer.SetDrawColor(255, 255, 255, 255)
+
+	// Clear renderer to draw color
+	renderer.Clear()
+
+	// Display render at the window
+	renderer.Present()
 }
 
 func draw() {
