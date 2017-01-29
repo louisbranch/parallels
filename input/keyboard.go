@@ -14,9 +14,8 @@ const (
 var QuitKey KeyState
 var NextTurnKey KeyState
 
-var keys = [...]*KeyState{
-	&QuitKey,
-	&NextTurnKey,
+var keymappings = map[sdl.Scancode]*KeyState{
+	sdl.SCANCODE_SPACE: &NextTurnKey,
 }
 
 func Process() {
@@ -27,40 +26,28 @@ func Process() {
 		}
 		switch event := event.(type) {
 		case *sdl.QuitEvent:
-			QuitKey.Press()
+			QuitKey = KeyPressed
 		case *sdl.KeyDownEvent:
-			switch event.Keysym.Scancode {
-			case sdl.SCANCODE_SPACE:
-				NextTurnKey.Press()
+			key, ok := keymappings[event.Keysym.Scancode]
+			if ok && *key == KeyEmpty {
+				*key = KeyPressed
 			}
 		case *sdl.KeyUpEvent:
-			switch event.Keysym.Scancode {
-			case sdl.SCANCODE_SPACE:
-				NextTurnKey.Release()
+			key, ok := keymappings[event.Keysym.Scancode]
+			if ok && *key == KeyHeld {
+				*key = KeyReleased
 			}
 		}
 	}
 }
 
 func Update() {
-	for _, key := range keys {
+	for _, key := range keymappings {
 		switch *key {
 		case KeyPressed:
 			*key = KeyHeld
 		case KeyReleased:
 			*key = KeyEmpty
 		}
-	}
-}
-
-func (k *KeyState) Press() {
-	if *k == KeyEmpty {
-		*k = KeyPressed
-	}
-}
-
-func (k *KeyState) Release() {
-	if *k == KeyHeld {
-		*k = KeyReleased
 	}
 }
