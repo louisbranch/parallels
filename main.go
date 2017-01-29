@@ -10,6 +10,8 @@ const FPS = 60
 
 var window *sdl.Window
 var renderer *sdl.Renderer
+var keystates []uint8
+
 var running = true
 
 func main() {
@@ -43,10 +45,18 @@ func main() {
 
 	delay := uint32(1000 / FPS)
 
-	for running {
+LOOP:
+	for {
 		start := sdl.GetTicks()
 
-		processInput()
+		sdl.PumpEvents()
+
+		keystates = sdl.GetKeyboardState()
+
+		if sdl.HasEvent(sdl.QUIT) || keystates[sdl.SCANCODE_ESCAPE] == 1 {
+			break LOOP
+		}
+
 		draw()
 
 		last := sdl.GetTicks() - start
@@ -56,23 +66,14 @@ func main() {
 		}
 	}
 
-}
+	// Destroy global renderer
+	renderer.Destroy()
 
-func processInput() {
-	event := sdl.PollEvent()
-	if event == nil {
-		return
-	}
+	// Close global window
+	window.Destroy()
 
-	switch event := event.(type) {
-	case *sdl.QuitEvent:
-		quit()
-	case *sdl.MouseButtonEvent:
-		if event.Type == sdl.MOUSEBUTTONDOWN {
-		}
-	}
-
-	return
+	// Close subsystems
+	sdl.Quit()
 }
 
 func draw() {
@@ -84,17 +85,4 @@ func draw() {
 
 	// Display render at the window
 	renderer.Present()
-}
-
-func quit() {
-	// Destroy global renderer
-	renderer.Destroy()
-
-	// Close global window
-	window.Destroy()
-
-	// Close subsystems
-	sdl.Quit()
-
-	running = false
 }
