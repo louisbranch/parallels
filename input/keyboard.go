@@ -13,9 +13,17 @@ const (
 
 var QuitKey KeyState
 var NextTurnKey KeyState
+var UpKey KeyState
+var DownKey KeyState
+var LeftKey KeyState
+var RightKey KeyState
 
 var keymappings = map[sdl.Scancode]*KeyState{
 	sdl.SCANCODE_SPACE: &NextTurnKey,
+	sdl.SCANCODE_UP:    &UpKey,
+	sdl.SCANCODE_DOWN:  &DownKey,
+	sdl.SCANCODE_LEFT:  &LeftKey,
+	sdl.SCANCODE_RIGHT: &RightKey,
 }
 
 func Process() {

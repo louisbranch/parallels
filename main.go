@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/luizbranco/parallels/input"
 	"github.com/veandco/go-sdl2/sdl"
+	img "github.com/veandco/go-sdl2/sdl_image"
 )
 
 const FPS = 60
@@ -10,6 +11,14 @@ const FPS = 60
 var window *sdl.Window
 var renderer *sdl.Renderer
 var mode Mode
+
+type Vector3 struct {
+	X int32
+	Y int32
+	Z int32
+}
+
+var Ship = &Vector3{50, 50, 0}
 
 type Mode int
 
@@ -100,11 +109,49 @@ func drawGame() {
 		mode = MenuMode
 	}
 
-	// Set renderer to white color (RGBA)
-	renderer.SetDrawColor(255, 255, 255, 255)
+	image, err := img.Load("assets/images/ship.png")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer image.Free()
+
+	texture, err := renderer.CreateTextureFromSurface(image)
+	if err != nil {
+		panic(err)
+	}
+
+	defer texture.Destroy()
+
+	_, _, w, h, err := texture.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	if input.UpKey == input.KeyPressed || input.UpKey == input.KeyHeld {
+		Ship.Y--
+	}
+
+	if input.DownKey == input.KeyPressed || input.DownKey == input.KeyHeld {
+		Ship.Y++
+	}
+
+	if input.LeftKey == input.KeyPressed || input.LeftKey == input.KeyHeld {
+		Ship.X--
+	}
+
+	if input.RightKey == input.KeyPressed || input.RightKey == input.KeyHeld {
+		Ship.X++
+	}
+
+	src := sdl.Rect{W: w, H: h}
+	dst := sdl.Rect{W: w, H: h, X: Ship.X, Y: Ship.Y}
 
 	// Clear renderer to draw color
 	renderer.Clear()
+
+	renderer.Copy(texture, &src, &dst)
 
 	// Display render at the window
 	renderer.Present()
