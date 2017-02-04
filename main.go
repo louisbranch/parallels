@@ -7,6 +7,7 @@ import (
 )
 
 const FPS = 60
+const TileSize = 30
 
 var window *sdl.Window
 var renderer *sdl.Renderer
@@ -148,9 +149,29 @@ func drawGame() {
 	src := sdl.Rect{W: w, H: h}
 	dst := sdl.Rect{W: w, H: h, X: Ship.X, Y: Ship.Y}
 
+	// Set renderer to black color (RGBA)
+	renderer.SetDrawColor(0, 0, 0, 255)
+
 	// Clear renderer to draw color
 	renderer.Clear()
 
+	rect := sdl.Rect{X: 0, Y: 0, W: 100, H: 100}
+
+	for i := 0; i < 11; i++ {
+		for j := 0; j < 30; j++ {
+			if j%2 == 0 {
+				renderer.SetDrawColor(0, 0, 255, 255)
+			} else {
+				renderer.SetDrawColor(255, 0, 0, 255)
+			}
+			renderer.FillRect(&rect)
+			rect.X += 100
+		}
+		rect.X = 0
+		rect.Y += 100
+	}
+
+	// Display Ship
 	renderer.Copy(texture, &src, &dst)
 
 	// Display render at the window
@@ -158,7 +179,7 @@ func drawGame() {
 }
 
 func draw() {
-	// Set renderer to white color (RGBA)
+	// Set renderer to black color (RGBA)
 	renderer.SetDrawColor(0, 0, 0, 255)
 
 	// Clear renderer to draw color
