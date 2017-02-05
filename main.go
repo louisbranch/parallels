@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/luizbranco/parallels/input"
+	"github.com/luizbranco/parallels/world"
 	"github.com/veandco/go-sdl2/sdl"
 	img "github.com/veandco/go-sdl2/sdl_image"
 )
@@ -157,18 +158,15 @@ func drawGame() {
 
 	rect := sdl.Rect{X: 0, Y: 0, W: 100, H: 100}
 
-	for i := 0; i < 11; i++ {
-		for j := 0; j < 30; j++ {
-			if j%2 == 0 {
-				renderer.SetDrawColor(0, 0, 255, 255)
-			} else {
-				renderer.SetDrawColor(255, 0, 0, 255)
-			}
-			renderer.FillRect(&rect)
-			rect.X += 100
+	for i, t := range world.Earth {
+		color := world.TerrainColor[t]
+		renderer.SetDrawColor(color.R, color.G, color.B, color.A)
+		renderer.FillRect(&rect)
+		rect.X += 100
+
+		if i > 20 {
+			break
 		}
-		rect.X = 0
-		rect.Y += 100
 	}
 
 	// Display Ship
