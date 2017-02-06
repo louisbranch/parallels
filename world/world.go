@@ -2,11 +2,8 @@ package world
 
 import (
 	"image/color"
-	"math"
 	"math/rand"
 	"time"
-
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 const TileSize = 50
@@ -24,7 +21,11 @@ var TerrainColor = [...]color.RGBA{
 	{255, 255, 255, 255},
 }
 
-type World [WorldWith * WorldHeight]Terrain
+type World struct {
+	W       int
+	H       int
+	Terrain []Terrain
+}
 
 const (
 	Water Terrain = iota
@@ -38,27 +39,18 @@ const (
 	Tundra
 )
 
-const WorldTiles = 400
-const WorldWith = 16 * WorldTiles
-const WorldHeight = 10 * WorldTiles
-const WorldLength = WorldWith * WorldHeight
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
-
 }
 
 func (w *World) Build() {
-	for i := 0; i < WorldLength; i++ {
-		w[i] = Terrain(rand.Intn(8))
+	w.Terrain = make([]Terrain, w.Size())
+
+	for i := range w.Terrain {
+		w.Terrain[i] = Terrain(rand.Intn(8))
 	}
 }
 
-func (w World) Intersect(src sdl.Rect) (dst sdl.Rect) {
-	dst.X = int32(math.Ceil(float64(src.X) / TileSize))
-	dst.Y = int32(math.Ceil(float64(src.Y) / TileSize))
-	dst.W = int32(math.Ceil(float64(src.W) / TileSize))
-	dst.H = int32(math.Ceil(float64(src.H) / TileSize))
-
-	return dst
+func (w *World) Size() int {
+	return w.W * w.H
 }
