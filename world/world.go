@@ -2,9 +2,14 @@ package world
 
 import (
 	"image/color"
+	"math"
 	"math/rand"
 	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
 )
+
+const TileSize = 50
 
 type Terrain int
 
@@ -24,6 +29,7 @@ type World [WorldWith * WorldHeight]Terrain
 const (
 	Water Terrain = iota
 	DeepWater
+	Land
 	Grass
 	Mountain
 	Swamp
@@ -36,13 +42,22 @@ const WorldTiles = 400
 const WorldWith = 16 * WorldTiles
 const WorldHeight = 10 * WorldTiles
 
-var Earth, Arcadian, Underworld World
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
-	for i := 0; i < WorldWith*WorldHeight; i++ {
-		Earth[i] = Terrain(rand.Intn(8))
-	}
+}
 
+func (w *World) Build() {
+	for i := 0; i < WorldWith*WorldHeight; i++ {
+		w[i] = Terrain(rand.Intn(8))
+	}
+}
+
+func (w World) Intersect(src sdl.Rect) (dst sdl.Rect) {
+	dst.X = int32(math.Ceil(float64(src.X) / TileSize))
+	dst.Y = int32(math.Ceil(float64(src.Y) / TileSize))
+	dst.W = int32(math.Ceil(float64(src.W) / TileSize))
+	dst.H = int32(math.Ceil(float64(src.H) / TileSize))
+
+	return dst
 }

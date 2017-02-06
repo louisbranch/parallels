@@ -4,14 +4,14 @@ import (
 	"github.com/luizbranco/parallels/input"
 	"github.com/luizbranco/parallels/world"
 	"github.com/veandco/go-sdl2/sdl"
-	img "github.com/veandco/go-sdl2/sdl_image"
 )
 
 const FPS = 60
-const TileSize = 30
 
 var window *sdl.Window
 var renderer *sdl.Renderer
+var camera = &sdl.Rect{}
+var earth = &world.World{}
 var mode Mode
 
 type Vector3 struct {
@@ -19,8 +19,6 @@ type Vector3 struct {
 	Y int32
 	Z int32
 }
-
-var Ship = &Vector3{50, 50, 0}
 
 type Mode int
 
@@ -59,6 +57,7 @@ func main() {
 	}
 
 	mode = MenuMode
+	earth.Build()
 
 	// delay between loop interactions
 	delay := uint32(1000 / FPS)
@@ -107,48 +106,43 @@ func drawMenu() {
 }
 
 func drawGame() {
+	width, height := window.GetSize()
+	camera.W = int32(width)
+	camera.H = int32(height)
+
 	if input.NextTurnKey == input.KeyPressed {
 		mode = MenuMode
 	}
 
-	image, err := img.Load("assets/images/ship.png")
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer image.Free()
-
-	texture, err := renderer.CreateTextureFromSurface(image)
-	if err != nil {
-		panic(err)
-	}
-
-	defer texture.Destroy()
-
-	_, _, w, h, err := texture.Query()
-	if err != nil {
-		panic(err)
-	}
-
 	if input.UpKey == input.KeyPressed || input.UpKey == input.KeyHeld {
-		Ship.Y--
+		camera.Y -= 5
+		if camera.Y < 0 {
+			camera.Y = 0
+		}
 	}
 
 	if input.DownKey == input.KeyPressed || input.DownKey == input.KeyHeld {
-		Ship.Y++
+		camera.Y += 5
+		max := world.WorldHeight - camera.H/2
+		if camera.Y > max {
+			camera.Y = max
+		}
 	}
 
 	if input.LeftKey == input.KeyPressed || input.LeftKey == input.KeyHeld {
-		Ship.X--
+		camera.X -= 5
+		if camera.X < 0 {
+			camera.X = 0
+		}
 	}
 
 	if input.RightKey == input.KeyPressed || input.RightKey == input.KeyHeld {
-		Ship.X++
+		camera.X += 5
+		max := world.WorldWith - camera.W/2
+		if camera.X > max {
+			camera.X = max
+		}
 	}
-
-	src := sdl.Rect{W: w, H: h}
-	dst := sdl.Rect{W: w, H: h, X: Ship.X, Y: Ship.Y}
 
 	// Set renderer to black color (RGBA)
 	renderer.SetDrawColor(0, 0, 0, 255)
@@ -156,21 +150,21 @@ func drawGame() {
 	// Clear renderer to draw color
 	renderer.Clear()
 
-	rect := sdl.Rect{X: 0, Y: 0, W: 100, H: 100}
+	rect := sdl.Rect{X: 0, Y: 0, W: world.TileSize, H: world.TileSize}
 
-	for i, t := range world.Earth {
-		color := world.TerrainColor[t]
-		renderer.SetDrawColor(color.R, color.G, color.B, color.A)
-		renderer.FillRect(&rect)
-		rect.X += 100
+	clip := earth.Intersect(*camera)
 
-		if i > 20 {
-			break
+	for y := clip.Y; y < clip.H; y++ {
+		for x := clip.X; x < clip.W; x++ {
+			t := earth[x*y]
+			color := world.TerrainColor[t]
+			renderer.SetDrawColor(color.R, color.G, color.B, color.A)
+			renderer.FillRect(&rect)
+			rect.X += world.TileSize
 		}
+		rect.X = 0
+		rect.Y += world.TileSize
 	}
-
-	// Display Ship
-	renderer.Copy(texture, &src, &dst)
 
 	// Display render at the window
 	renderer.Present()
