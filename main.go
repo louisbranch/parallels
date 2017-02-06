@@ -110,35 +110,37 @@ func drawGame() {
 	camera.W = int32(width)
 	camera.H = int32(height)
 
+	const speed = world.TileSize
+
 	if input.NextTurnKey == input.KeyPressed {
 		mode = MenuMode
 	}
 
 	if input.UpKey == input.KeyPressed || input.UpKey == input.KeyHeld {
-		camera.Y -= 5
+		camera.Y -= speed
 		if camera.Y < 0 {
 			camera.Y = 0
 		}
 	}
 
 	if input.DownKey == input.KeyPressed || input.DownKey == input.KeyHeld {
-		camera.Y += 5
-		max := world.WorldHeight - camera.H/2
+		camera.Y += speed
+		max := world.WorldHeight*world.TileSize - camera.H/2
 		if camera.Y > max {
 			camera.Y = max
 		}
 	}
 
 	if input.LeftKey == input.KeyPressed || input.LeftKey == input.KeyHeld {
-		camera.X -= 5
+		camera.X -= speed
 		if camera.X < 0 {
 			camera.X = 0
 		}
 	}
 
 	if input.RightKey == input.KeyPressed || input.RightKey == input.KeyHeld {
-		camera.X += 5
-		max := world.WorldWith - camera.W/2
+		camera.X += speed
+		max := world.WorldWith*world.TileSize - camera.W/2
 		if camera.X > max {
 			camera.X = max
 		}
@@ -154,9 +156,9 @@ func drawGame() {
 
 	clip := earth.Intersect(*camera)
 
-	for y := clip.Y; y < clip.H; y++ {
-		for x := clip.X; x < clip.W; x++ {
-			t := earth[x*y]
+	for y := clip.Y * world.WorldWith; y < world.WorldLength; y += world.WorldWith {
+		for x := clip.X; x < clip.X+clip.W; x++ {
+			t := earth[x+y]
 			color := world.TerrainColor[t]
 			renderer.SetDrawColor(color.R, color.G, color.B, color.A)
 			renderer.FillRect(&rect)

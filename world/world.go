@@ -41,6 +41,7 @@ const (
 const WorldTiles = 400
 const WorldWith = 16 * WorldTiles
 const WorldHeight = 10 * WorldTiles
+const WorldLength = WorldWith * WorldHeight
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -48,7 +49,7 @@ func init() {
 }
 
 func (w *World) Build() {
-	for i := 0; i < WorldWith*WorldHeight; i++ {
+	for i := 0; i < WorldLength; i++ {
 		w[i] = Terrain(rand.Intn(8))
 	}
 }
