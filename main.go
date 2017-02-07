@@ -45,7 +45,8 @@ func main() {
 
 	// Create a renderer for the window. -1 is set to give us the first video
 	// driver available. No flags (0) for the render is passed.
-	renderer, err = sdl.CreateRenderer(window, -1, 0)
+	flags = sdl.RENDERER_ACCELERATED | sdl.RENDERER_PRESENTVSYNC
+	renderer, err = sdl.CreateRenderer(window, -1, flags)
 
 	// If a rendered can't be created, we crash
 	if err != nil {
@@ -152,7 +153,7 @@ func drawGame() {
 	renderer.SetDrawColor(0, 0, 0, 255)
 
 	// Clear renderer to draw color
-	renderer.Clear()
+	// renderer.Clear()
 
 	start, w, h := cam.Clip(earth.W, earth.H)
 
