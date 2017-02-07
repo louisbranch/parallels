@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/luizbranco/parallels/camera"
 	"github.com/luizbranco/parallels/input"
+	"github.com/luizbranco/parallels/math"
 	"github.com/luizbranco/parallels/world"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -12,7 +13,7 @@ const FPS = 60
 var window *sdl.Window
 var renderer *sdl.Renderer
 var cam *camera.Camera
-var earth = &world.World{}
+var earth *world.World
 var mode Mode
 
 type Mode int
@@ -51,7 +52,13 @@ func main() {
 		panic(err)
 	}
 
+	// Initialize global vals
 	mode = MenuMode
+	cam = &camera.Camera{}
+	earth = &world.World{
+		W: 200,
+		H: 150,
+	}
 	earth.Build()
 
 	// delay between loop interactions
@@ -107,20 +114,27 @@ func drawGame() {
 
 	const speed = world.TileSize
 
+	maxW := earth.W*world.TileSize - cam.W/2
+	maxH := earth.H*world.TileSize - cam.H/2
+
 	if input.NextTurnKey == input.KeyPressed {
 		mode = MenuMode
 	}
 
 	if input.UpKey == input.KeyPressed || input.UpKey == input.KeyHeld {
+		cam.Y = math.Clamp(cam.Y-speed, 0, maxH)
 	}
 
 	if input.DownKey == input.KeyPressed || input.DownKey == input.KeyHeld {
+		cam.Y = math.Clamp(cam.Y+speed, 0, maxH)
 	}
 
 	if input.LeftKey == input.KeyPressed || input.LeftKey == input.KeyHeld {
+		cam.X = math.Clamp(cam.X-speed, 0, maxW)
 	}
 
 	if input.RightKey == input.KeyPressed || input.RightKey == input.KeyHeld {
+		cam.X = math.Clamp(cam.X+speed, 0, maxW)
 	}
 
 	// Set renderer to black color (RGBA)
@@ -129,23 +143,22 @@ func drawGame() {
 	// Clear renderer to draw color
 	renderer.Clear()
 
-	/*
-		rect := sdl.Rect{X: 0, Y: 0, W: world.TileSize, H: world.TileSize}
+	start, w, h := cam.Clip(earth.W, earth.H, world.TileSize)
 
-			clip := cam.Clip(math.Rect{}, world.TileSize)
+	rect := &sdl.Rect{W: world.TileSize, H: world.TileSize}
 
-			for y := clip.Y * world.WorldWith; y < world.WorldLength; y += world.WorldWith {
-				for x := clip.X; x < clip.X+clip.W; x++ {
-					t := earth[x+y]
-					color := world.TerrainColor[t]
-					renderer.SetDrawColor(color.R, color.G, color.B, color.A)
-					renderer.FillRect(&rect)
-					rect.X += world.TileSize
-				}
-				rect.X = 0
-				rect.Y += world.TileSize
-			}
-	*/
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			t := earth.Terrain[start+x]
+			color := world.TerrainColor[t]
+			renderer.SetDrawColor(color.R, color.G, color.B, color.A)
+			renderer.FillRect(rect)
+			rect.X += world.TileSize
+		}
+		rect.X = 0
+		rect.Y += world.TileSize
+		start += earth.W
+	}
 
 	// Display render at the window
 	renderer.Present()

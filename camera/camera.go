@@ -1,14 +1,13 @@
 package camera
 
 import "github.com/luizbranco/parallels/math"
-import m "math"
 
 const minZoom = 1
 const maxZoom = 3
 
 type Camera struct {
-	math.Rect
 	Zoom int
+	math.Rect
 }
 
 func (c *Camera) ZoomIn() {
@@ -19,11 +18,16 @@ func (c *Camera) ZoomOut() {
 	c.Zoom = math.Clamp(c.Zoom+1, minZoom, maxZoom)
 }
 
-func (c *Camera) Clip(src math.Rect, size float64) (dst math.Rect) {
-	dst.X = int(m.Ceil(float64(src.X) / size))
-	dst.Y = int(m.Ceil(float64(src.Y) / size))
-	dst.W = int(m.Ceil(float64(src.W) / size))
-	dst.H = int(m.Ceil(float64(src.H) / size))
+func (c *Camera) Clip(width, height, pixels int) (start, w, h int) {
+	// camera tile-based size
+	w = math.Clamp(math.DivCeil(c.W, pixels), 0, width)
+	h = math.Clamp(math.DivCeil(c.H, pixels), 0, height)
 
-	return dst
+	// camera tile-based position
+	x := math.Clamp(math.DivFloor(c.X, pixels), 0, width-w)
+	y := math.Clamp(math.DivFloor(c.Y, pixels), 0, height-h)
+
+	start = x + (y * width)
+
+	return
 }

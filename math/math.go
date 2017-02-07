@@ -1,5 +1,7 @@
 package math
 
+import "math"
+
 type Rect struct {
 	X, Y, W, H int
 }
@@ -18,4 +20,14 @@ func Clamp(x, min, max int) int {
 	}
 
 	return x
+}
+
+func DivCeil(a, b int) int {
+	n := math.Ceil(float64(a) / float64(b))
+	return int(n)
+}
+
+func DivFloor(a, b int) int {
+	n := math.Floor(float64(a) / float64(b))
+	return int(n)
 }
