@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/luizbranco/parallels/camera"
 	"github.com/luizbranco/parallels/input"
-	"github.com/luizbranco/parallels/math"
 	"github.com/luizbranco/parallels/world"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -54,7 +53,13 @@ func main() {
 
 	// Initialize global vals
 	mode = MenuMode
-	cam = &camera.Camera{}
+	cam = &camera.Camera{
+		TileSize: 50,
+		Speed:    10,
+		MinZoom:  1,
+		MaxZoom:  3,
+		Zoom:     1,
+	}
 	earth = &world.World{
 		W: 200,
 		H: 150,
@@ -111,30 +116,27 @@ func drawGame() {
 	width, height := window.GetSize()
 	cam.W = width
 	cam.H = height
-
-	const speed = world.TileSize
-
-	maxW := earth.W*world.TileSize - cam.W/2
-	maxH := earth.H*world.TileSize - cam.H/2
+	cam.MaxW = earth.W*cam.TileSize - cam.W/2
+	cam.MaxH = earth.H*cam.TileSize - cam.H/2
 
 	if input.NextTurnKey == input.KeyPressed {
 		mode = MenuMode
 	}
 
 	if input.UpKey == input.KeyPressed || input.UpKey == input.KeyHeld {
-		cam.Y = math.Clamp(cam.Y-speed, 0, maxH)
+		cam.MoveUp()
 	}
 
 	if input.DownKey == input.KeyPressed || input.DownKey == input.KeyHeld {
-		cam.Y = math.Clamp(cam.Y+speed, 0, maxH)
+		cam.MoveDown()
 	}
 
 	if input.LeftKey == input.KeyPressed || input.LeftKey == input.KeyHeld {
-		cam.X = math.Clamp(cam.X-speed, 0, maxW)
+		cam.MoveLeft()
 	}
 
 	if input.RightKey == input.KeyPressed || input.RightKey == input.KeyHeld {
-		cam.X = math.Clamp(cam.X+speed, 0, maxW)
+		cam.MoveRight()
 	}
 
 	// Set renderer to black color (RGBA)
@@ -143,9 +145,11 @@ func drawGame() {
 	// Clear renderer to draw color
 	renderer.Clear()
 
-	start, w, h := cam.Clip(earth.W, earth.H, world.TileSize)
+	start, w, h := cam.Clip(earth.W, earth.H)
 
-	rect := &sdl.Rect{W: world.TileSize, H: world.TileSize}
+	size := int32(cam.TileSize)
+
+	rect := &sdl.Rect{W: size, H: size}
 
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
@@ -153,10 +157,10 @@ func drawGame() {
 			color := world.TerrainColor[t]
 			renderer.SetDrawColor(color.R, color.G, color.B, color.A)
 			renderer.FillRect(rect)
-			rect.X += world.TileSize
+			rect.X += size
 		}
 		rect.X = 0
-		rect.Y += world.TileSize
+		rect.Y += size
 		start += earth.W
 	}
 

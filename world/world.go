@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-const TileSize = 50
-
 type Terrain int
 
 var TerrainColor = [...]color.RGBA{

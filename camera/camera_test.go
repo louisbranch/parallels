@@ -11,7 +11,6 @@ func TestCameraClip(t *testing.T) {
 		cam    Camera
 		width  int
 		height int
-		pixels int
 		start  int
 		w      int
 		h      int
@@ -22,10 +21,10 @@ func TestCameraClip(t *testing.T) {
 				Rect: math.Rect{
 					X: 0, Y: 0, W: 640, H: 480,
 				},
+				TileSize: 200,
 			},
 			width:  6,
 			height: 4,
-			pixels: 200,
 			w:      4,
 			h:      3,
 			start:  0,
@@ -35,10 +34,10 @@ func TestCameraClip(t *testing.T) {
 				Rect: math.Rect{
 					X: 0, Y: 0, W: 640, H: 480,
 				},
+				TileSize: 50,
 			},
 			width:  6,
 			height: 4,
-			pixels: 50,
 			w:      6,
 			h:      4,
 			start:  0,
@@ -48,10 +47,10 @@ func TestCameraClip(t *testing.T) {
 				Rect: math.Rect{
 					X: 250, Y: 250, W: 1024, H: 768,
 				},
+				TileSize: 200,
 			},
 			width:  13,
 			height: 10,
-			pixels: 200,
 			w:      6,
 			h:      4,
 			start:  14,
@@ -59,7 +58,7 @@ func TestCameraClip(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		start, w, h := tc.cam.Clip(tc.width, tc.height, tc.pixels)
+		start, w, h := tc.cam.Clip(tc.width, tc.height)
 
 		if tc.start != start {
 			t.Errorf("expect start = %d, got %d", tc.start, start)
