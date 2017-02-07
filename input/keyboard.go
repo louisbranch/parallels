@@ -12,18 +12,24 @@ const (
 )
 
 var QuitKey KeyState
+var EscKey KeyState
 var NextTurnKey KeyState
 var UpKey KeyState
 var DownKey KeyState
 var LeftKey KeyState
 var RightKey KeyState
+var ZoomInKey KeyState
+var ZoomOutKey KeyState
 
-var keymappings = map[sdl.Scancode]*KeyState{
-	sdl.SCANCODE_SPACE: &NextTurnKey,
-	sdl.SCANCODE_UP:    &UpKey,
-	sdl.SCANCODE_DOWN:  &DownKey,
-	sdl.SCANCODE_LEFT:  &LeftKey,
-	sdl.SCANCODE_RIGHT: &RightKey,
+var keymappings = map[sdl.Keycode]*KeyState{
+	sdl.K_ESCAPE: &EscKey,
+	sdl.K_SPACE:  &NextTurnKey,
+	sdl.K_UP:     &UpKey,
+	sdl.K_DOWN:   &DownKey,
+	sdl.K_LEFT:   &LeftKey,
+	sdl.K_RIGHT:  &RightKey,
+	sdl.K_EQUALS: &ZoomInKey,
+	sdl.K_MINUS:  &ZoomOutKey,
 }
 
 func Process() {
@@ -36,12 +42,12 @@ func Process() {
 		case *sdl.QuitEvent:
 			QuitKey = KeyPressed
 		case *sdl.KeyDownEvent:
-			key, ok := keymappings[event.Keysym.Scancode]
+			key, ok := keymappings[event.Keysym.Sym]
 			if ok && *key == KeyEmpty {
 				*key = KeyPressed
 			}
 		case *sdl.KeyUpEvent:
-			key, ok := keymappings[event.Keysym.Scancode]
+			key, ok := keymappings[event.Keysym.Sym]
 			if ok && *key == KeyHeld {
 				*key = KeyReleased
 			}

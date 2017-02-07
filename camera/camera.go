@@ -41,13 +41,19 @@ func (c *Camera) ZoomOut() {
 }
 
 func (c *Camera) Clip(width, height int) (start, w, h int) {
+	if c.Zoom == 0 {
+		c.Zoom = 1
+	}
+
+	size := math.DivCeil(c.TileSize, c.Zoom)
+
 	// camera tile-based size
-	w = math.Clamp(math.DivCeil(c.W, c.TileSize), 0, width)
-	h = math.Clamp(math.DivCeil(c.H, c.TileSize), 0, height)
+	w = math.Clamp(math.DivCeil(c.W, size), 0, width)
+	h = math.Clamp(math.DivCeil(c.H, size), 0, height)
 
 	// camera tile-based position
-	x := math.Clamp(math.DivFloor(c.X, c.TileSize), 0, width-w)
-	y := math.Clamp(math.DivFloor(c.Y, c.TileSize), 0, height-h)
+	x := math.Clamp(math.DivFloor(c.X, size), 0, width-w)
+	y := math.Clamp(math.DivFloor(c.Y, size), 0, height-h)
 
 	start = x + (y * width)
 

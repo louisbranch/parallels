@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/luizbranco/parallels/camera"
 	"github.com/luizbranco/parallels/input"
+	"github.com/luizbranco/parallels/math"
 	"github.com/luizbranco/parallels/world"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -105,7 +106,7 @@ func main() {
 }
 
 func drawMenu() {
-	if input.NextTurnKey == input.KeyPressed {
+	if input.EscKey == input.KeyPressed {
 		mode = GameMode
 	}
 
@@ -119,7 +120,7 @@ func drawGame() {
 	cam.MaxW = earth.W*cam.TileSize - cam.W/2
 	cam.MaxH = earth.H*cam.TileSize - cam.H/2
 
-	if input.NextTurnKey == input.KeyPressed {
+	if input.EscKey == input.KeyPressed {
 		mode = MenuMode
 	}
 
@@ -139,6 +140,14 @@ func drawGame() {
 		cam.MoveRight()
 	}
 
+	if input.ZoomInKey == input.KeyPressed {
+		cam.ZoomIn()
+	}
+
+	if input.ZoomOutKey == input.KeyPressed {
+		cam.ZoomOut()
+	}
+
 	// Set renderer to black color (RGBA)
 	renderer.SetDrawColor(0, 0, 0, 255)
 
@@ -147,7 +156,7 @@ func drawGame() {
 
 	start, w, h := cam.Clip(earth.W, earth.H)
 
-	size := int32(cam.TileSize)
+	size := int32(math.DivCeil(cam.TileSize, cam.Zoom))
 
 	rect := &sdl.Rect{W: size, H: size}
 
