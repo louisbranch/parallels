@@ -118,8 +118,8 @@ func drawGame() {
 	width, height := window.GetSize()
 	cam.W = width
 	cam.H = height
-	cam.MaxW = earth.W*cam.TileSize - cam.W/2
-	cam.MaxH = earth.H*cam.TileSize - cam.H/2
+	cam.MaxW = earth.W*cam.TileSize/cam.Zoom - cam.W/2
+	cam.MaxH = earth.H*cam.TileSize/cam.Zoom - cam.H/2
 
 	if input.EscKey == input.KeyPressed {
 		mode = MenuMode
