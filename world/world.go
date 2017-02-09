@@ -1,29 +1,20 @@
 package world
 
 import (
+	"fmt"
 	"image/color"
 	"math/rand"
 	"time"
+
+	"github.com/luizbranco/parallels/world/perlin"
 )
 
 type Terrain int
 
-var TerrainColor = [...]color.RGBA{
-	{0, 0, 255, 255},
-	{0, 0, 100, 255},
-	{50, 50, 50, 255},
-	{0, 255, 0, 255},
-	{200, 100, 100, 255},
-	{100, 100, 100, 255},
-	{0, 100, 0, 255},
-	{150, 150, 150, 255},
-	{255, 255, 255, 255},
-}
-
 type World struct {
 	W       int
 	H       int
-	Terrain []Terrain
+	Terrain []color.RGBA
 }
 
 const (
@@ -43,13 +34,52 @@ func init() {
 }
 
 func (w *World) Build() {
-	w.Terrain = make([]Terrain, w.Size())
+	p := perlin.New2D(0)
 
-	for i := range w.Terrain {
-		w.Terrain[i] = Terrain(rand.Intn(8))
+	w.Terrain = make([]color.RGBA, w.W*w.H)
+
+	width := float64(w.W)
+	height := float64(w.H)
+
+	for y := 0; y < w.H; y++ {
+		for x := 0; x < w.W; x++ {
+
+			maxW := width / 2.0
+			maxH := height / 2.0
+
+			nx := maxW - float64(x)/maxW
+			ny := maxH - float64(y)/maxH
+
+			noise := p.Get2D
+
+			// Adapted from http://www.redblobgames.com/maps/terrain-from-noise/
+			e := noise(1*nx, 1*ny) +
+				0.50*noise(2*nx, 2*ny) +
+				0.25*noise(4*nx, 4*ny) +
+				0.13*noise(8*nx, 8*ny) +
+				0.06*noise(16*nx, 16*ny) +
+				0.03*noise(32*nx, 32*ny)
+
+			m := 1.00*noise(1*nx, 1*ny) +
+				0.75*noise(2*nx, 2*ny) +
+				0.33*noise(4*nx, 4*ny) +
+				0.33*noise(8*nx, 8*ny) +
+				0.33*noise(16*nx, 16*ny) +
+				0.50*noise(32*nx, 32*ny)
+
+			z := 1.00*noise(1*nx, 1*ny) +
+				0.65*noise(2*nx, 2*ny) +
+				0.40*noise(4*nx, 4*ny) +
+				0.25*noise(8*nx, 8*ny) +
+				0.15*noise(16*nx, 16*ny) +
+				0.10*noise(32*nx, 32*ny)
+
+			r := uint8(255 * z)
+			g := uint8(255 * e)
+			b := uint8(255 * m)
+
+			w.Terrain[x+y*w.W] = color.RGBA{r, g, b, 255}
+		}
+		fmt.Println()
 	}
-}
-
-func (w *World) Size() int {
-	return w.W * w.H
 }

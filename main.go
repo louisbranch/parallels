@@ -54,13 +54,13 @@ func main() {
 	}
 
 	// Initialize global vals
-	mode = MenuMode
+	mode = GameMode
 	cam = &camera.Camera{
 		TileSize: 50,
 		Speed:    10,
 		MinZoom:  1,
 		MaxZoom:  3,
-		Zoom:     1,
+		Zoom:     3,
 	}
 	earth = &world.World{
 		W: 200,
@@ -163,8 +163,8 @@ func drawGame() {
 
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
-			t := earth.Terrain[start+x]
-			color := world.TerrainColor[t]
+			color := earth.Terrain[start+x]
+			//color := world.TerrainColor[t]
 			renderer.SetDrawColor(color.R, color.G, color.B, color.A)
 			renderer.FillRect(rect)
 			rect.X += size
