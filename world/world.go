@@ -1,26 +1,27 @@
 package world
 
 import (
-	"fmt"
-	"image/color"
 	"math/rand"
 	"time"
 
 	"github.com/luizbranco/parallels/world/perlin"
 )
 
-type Terrain int
-
 type World struct {
-	W       int
-	H       int
-	Terrain []color.RGBA
+	W     int
+	H     int
+	Tiles []Tile
 }
+
+type Tile struct {
+	Terrain
+}
+
+type Terrain int
 
 const (
 	Water Terrain = iota
 	DeepWater
-	Land
 	Grass
 	Mountain
 	Swamp
@@ -36,7 +37,7 @@ func init() {
 func (w *World) Build() {
 	p := perlin.New2D(0)
 
-	w.Terrain = make([]color.RGBA, w.W*w.H)
+	w.Tiles = make([]Tile, w.W*w.H)
 
 	width := float64(w.W)
 	height := float64(w.H)
@@ -53,33 +54,38 @@ func (w *World) Build() {
 			noise := p.Get2D
 
 			// Adapted from http://www.redblobgames.com/maps/terrain-from-noise/
-			e := noise(1*nx, 1*ny) +
+			elevation := noise(1*nx, 1*ny) +
 				0.50*noise(2*nx, 2*ny) +
 				0.25*noise(4*nx, 4*ny) +
 				0.13*noise(8*nx, 8*ny) +
 				0.06*noise(16*nx, 16*ny) +
 				0.03*noise(32*nx, 32*ny)
 
-			m := 1.00*noise(1*nx, 1*ny) +
+			moisture := 1.00*noise(1*nx, 1*ny) +
 				0.75*noise(2*nx, 2*ny) +
 				0.33*noise(4*nx, 4*ny) +
 				0.33*noise(8*nx, 8*ny) +
 				0.33*noise(16*nx, 16*ny) +
 				0.50*noise(32*nx, 32*ny)
 
-			z := 1.00*noise(1*nx, 1*ny) +
+			magic := 1.00*noise(1*nx, 1*ny) +
 				0.65*noise(2*nx, 2*ny) +
 				0.40*noise(4*nx, 4*ny) +
 				0.25*noise(8*nx, 8*ny) +
 				0.15*noise(16*nx, 16*ny) +
 				0.10*noise(32*nx, 32*ny)
 
-			r := uint8(255 * z)
-			g := uint8(255 * e)
-			b := uint8(255 * m)
+			terrain := biome(elevation, moisture, magic)
 
-			w.Terrain[x+y*w.W] = color.RGBA{r, g, b, 255}
+			w.Tiles[x+y*w.W] = Tile{Terrain: terrain}
 		}
-		fmt.Println()
 	}
+}
+
+func biome(elevation, moisture, magic float64) Terrain {
+	if elevation < 0 {
+		return Water
+	}
+
+	return Grass
 }

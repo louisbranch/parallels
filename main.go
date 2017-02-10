@@ -6,6 +6,7 @@ import (
 	"github.com/luizbranco/parallels/math"
 	"github.com/luizbranco/parallels/world"
 	"github.com/veandco/go-sdl2/sdl"
+	img "github.com/veandco/go-sdl2/sdl_image"
 )
 
 const FPS = 60
@@ -17,6 +18,15 @@ var earth *world.World
 var mode Mode
 
 type Mode int
+
+type Image struct {
+	W       int32
+	H       int32
+	Texture *sdl.Texture
+}
+
+var water Image
+var forest Image
 
 const (
 	MenuMode Mode = iota
@@ -60,13 +70,16 @@ func main() {
 		Speed:    10,
 		MinZoom:  1,
 		MaxZoom:  3,
-		Zoom:     3,
+		Zoom:     1,
 	}
 	earth = &world.World{
 		W: 200,
 		H: 150,
 	}
 	earth.Build()
+
+	water = loadImage("water_a1")
+	forest = loadImage("forest")
 
 	// delay between loop interactions
 	delay := uint32(1000 / FPS)
@@ -95,6 +108,9 @@ func main() {
 			sdl.Delay(delay - last)
 		}
 	}
+
+	water.Texture.Destroy()
+	forest.Texture.Destroy()
 
 	// Destroy global renderer
 	renderer.Destroy()
@@ -153,20 +169,23 @@ func drawGame() {
 	renderer.SetDrawColor(0, 0, 0, 255)
 
 	// Clear renderer to draw color
-	// renderer.Clear()
+	renderer.Clear()
 
 	start, w, h := cam.Clip(earth.W, earth.H)
 
 	size := int32(math.DivCeil(cam.TileSize, cam.Zoom))
 
 	rect := &sdl.Rect{W: size, H: size}
+	src := &sdl.Rect{W: water.W, H: water.H}
 
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
-			color := earth.Terrain[start+x]
-			//color := world.TerrainColor[t]
-			renderer.SetDrawColor(color.R, color.G, color.B, color.A)
-			renderer.FillRect(rect)
+			t := earth.Tiles[start+x]
+			if t.Terrain == world.Water {
+				renderer.Copy(water.Texture, src, rect)
+			} else {
+				renderer.Copy(forest.Texture, src, rect)
+			}
 			rect.X += size
 		}
 		rect.X = 0
@@ -187,4 +206,28 @@ func draw() {
 
 	// Display render at the window
 	renderer.Present()
+}
+
+func loadImage(name string) Image {
+	image, err := img.Load("assets/images/" + name + ".png")
+	if err != nil {
+		panic(err)
+	}
+	defer image.Free()
+
+	texture, err := renderer.CreateTextureFromSurface(image)
+	if err != nil {
+		panic(err)
+	}
+
+	_, _, w, h, err := texture.Query()
+	if err != nil {
+		panic(err)
+	}
+
+	return Image{
+		W:       w,
+		H:       h,
+		Texture: texture,
+	}
 }

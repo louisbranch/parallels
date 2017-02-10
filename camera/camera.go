@@ -2,9 +2,6 @@ package camera
 
 import "github.com/luizbranco/parallels/math"
 
-const MinZoom = 1
-const MaxZoom = 3
-
 type Camera struct {
 	Zoom     int
 	MinZoom  int
@@ -33,6 +30,7 @@ func (c *Camera) MoveRight() {
 }
 
 func (c *Camera) ZoomIn() {
+	//FIXME zoom in and out should use the central point as target
 	c.Zoom = math.Clamp(c.Zoom-1, c.MinZoom, c.MaxZoom)
 }
 
